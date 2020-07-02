@@ -12,18 +12,18 @@ namespace BPixUploader
 {
   public partial class FinishDialog : Form
   {
-    private string[] Urls;
+    private Dictionary<string, string> Urls;
 
     public FinishDialog()
     {
       InitializeComponent();
     }
 
-    public FinishDialog(string[] uploadedUrls)
+    public FinishDialog(Dictionary<string, string> uploadedUrls)
     {
       InitializeComponent();
       Urls = uploadedUrls;
-      urls.Text = string.Join("\n", Urls);
+      AddRemoveTags(null, null);
       tagsCheckbox.CheckedChanged += AddRemoveTags;
     }
 
@@ -39,12 +39,15 @@ namespace BPixUploader
         urls.Text = string.Empty;
         foreach (var url in Urls)
         {
-          urls.Text += string.Format("[img]{0}[/img]\n", url);
+          urls.Text += string.Format("{0},[img]{1}[/img]\n", url.Key, url.Value);
         }
       }
       else
       {
-        urls.Text = string.Join("\n", Urls);
+        foreach (var url in Urls)
+        {
+          urls.Text += string.Format("{0},{1}\n", url.Key, url.Value);
+        }
       }
     }
   }

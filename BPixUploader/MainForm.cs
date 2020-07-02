@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -153,7 +154,7 @@ namespace BPixUploader
       var countdown = new CountdownEvent(QueuedFiles.Count);
       for (int imageIndex = 0; imageIndex < QueuedFiles.Count; imageIndex += 1)
       {
-        ThreadPool.QueueUserWorkItem(UploadThread, new object[] {
+        await UploadThread(new object[] {
           token,
           QueuedFiles[imageIndex],
           urls,
@@ -163,10 +164,15 @@ namespace BPixUploader
       }
       countdown.Wait();
       statusText.Text = string.Empty;
-      new FinishDialog(urls).ShowDialog();
+      var namesAndUrls = new Dictionary<string, string>();
+      for (int imageIndex = 0; imageIndex < QueuedFiles.Count; imageIndex += 1)
+      {
+        namesAndUrls.Add(Path.GetFileName(QueuedFiles[imageIndex]), urls[imageIndex]);
+      }
+      new FinishDialog(namesAndUrls).ShowDialog();
     }
 
-    private async void UploadThread(object state)
+    private async Task<int> UploadThread(object state)
     {
       var stateArray = state as object[];
       var token = (string)stateArray[0];
@@ -192,9 +198,14 @@ namespace BPixUploader
       var initialUrl = (JsonConvert.DeserializeObject(body) as JObject)["result"]["src"].Value<string>();
       // Now, we make a GET request to the initial URL, so we can get the direct link to the file.
       var getResult = await client.GetAsync(initialUrl);
-      urls[threadId] = getResult.RequestMessage.RequestUri.AbsoluteUri;
+      urls[threadId] = getResult.RequestMessage.RequestUri.AbsoluteUri
+        .Replace("lpbeach.co.uk/piwigo", "bpix.lpbeach.co.uk")
+        .Replace("i.php?/", string.Empty)
+        .Replace("-th", string.Empty);
       fileList[1, threadId].Value = "Done!";
       countdown.Signal();
+      // Dummy value.
+      return 622;
     }
 
     private void OptionsClicked(object sender, EventArgs args)
