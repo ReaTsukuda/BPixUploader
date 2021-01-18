@@ -23,7 +23,7 @@ namespace BPixUploader
     private static readonly HttpClient client = new HttpClient();
 
     // Only files with these extensions are allowed to be uploaded.
-    private static readonly string[] AllowedFileExtensions = new string[] { ".png", ".jpg" };
+    private static readonly string[] AllowedFileExtensions = new string[] { ".png", ".jpg", ".webp", ".gif", ".webm" };
 
     private List<string> QueuedFiles = new List<string>();
 
